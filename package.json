@@ -1,0 +1,20 @@
+{
+  "name": "evm-breakpoints",
+  "version": "1.0.0",
+  "description": "Human-friendly interface for Ethereum VM breakpoints - debugging helper",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wcrbrm/evm-breakpoints.git"
+  },
+  "keywords": [ "solidity", "debugging" ],
+  "author": "Viktor Lopata",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wcrbrm/evm-breakpoints/issues"
+  },
+  "homepage": "https://github.com/wcrbrm/evm-breakpoints#readme"
+}
