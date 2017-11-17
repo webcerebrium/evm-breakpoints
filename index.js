@@ -1,20 +1,34 @@
 // --- --- --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- --- 
-// 1 - Contract object
+// 1 - Contract object - used for contract compilation and additional mapping
 // --- --- --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- --- 
-
+var isBrowser = typeof window !== 'undefined';
 var evmContract = function(options) {
-       
-  if (!options.address) { throw new Error('Expected to have contract address'); }
+  // if (!options.address) { throw new Error('Expected to have contract address'); }
 
-  var expected = ['standardJson'];
-  if (typeof window === 'undefined') {
-	expected.push('standardJsonFile');
+  var loadSolc = isBrowser ? function(compiler, cb) { return BrowserSolc.loadVersion("soljson-" + compiler + ".js", cb); } : require('solc').loadRemoteVersion;
+  var expected = ['source'];
+ 
+  var events = {};
+  this.on = function(event, callback) {
+    events[event] = callback;
+  };
+
+  var json = {};
+  var setJson = function(val) { 
+    json = val; 
+    if (typeof events.ready === 'function') { events.ready(json); }
   }
 
-  this.json = {};
-  if (options.standardJson) {        
-  } else if (typeof window === 'undefined') {
-     // server version standardJsonFile
+  if (options.source) {        
+     if (options.compiler) {
+	console.log("Loading compiler version: " + options.compiler);
+     	loadSolc(options.compiler, function(solcCustom) {
+           var compiled = solcCustom.compile(options.source, options.optimization ? 1 : 0);
+	   setJson(compiled);
+     	});
+     } else { 
+	throw new Error("Compiler version is not specified");
+     }
   } else {
      throw new Error("Contract expects to have " + expected.join(" or "));
   } 
@@ -31,10 +45,9 @@ var evmWatcher = function () {
 
   this.add = function(params) {
     if (!params.contract) { throw new Error("Expected contract as the 1st argument to add breakpoint"); }
-    if (!params.contract.json) { throw new Error("Expected contract object as the 1st argument to add breakpoint");  }
     if (!params.lines) { throw new Error("Expected lines list to add breakpoint"); }
-
     this.points.push(params);
+    return this;
   };
 
   var condition = function() {
@@ -47,7 +60,7 @@ var evmWatcher = function () {
 
   // builds the options for debugTransaction - mainly the tracer string
   this.build = function() {                                                                                                   
-     return '{data: [], step: function(log, db) { if('+ condition() + ') this.data.push("'+ data() +'"); }, result: function() { return this.data; }}';
+     return '{data: [], step: function(log, db) { if('+ condition() + ') this.data.push('+ data() +'); }, result: function() { return this.data; }}';
   };
 
   return this;
@@ -58,9 +71,9 @@ var evmWatcher = function () {
 // 3 - Breakpoints iterator
 // --- --- --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- --- 
 var evmDebugIterator = function(web3, txHash, logger) {
-  if (typeof web3 !== 'function') { throw new Error('Web3 is not passed to Debug Iterator'); }
+  if (typeof web3 !== 'object') { throw new Error('web3 is not passed to Debug Iterator'); }
   if (!txHash) { throw new Error('Transaction expected'); }
-  if (typeof logger !== 'function') { throw new Error('Iterator expects logger as third parameter'); }
+  if (typeof logger !== 'string') { throw new Error('Iterator expects logger as third parameter'); }
           
   // Injecting web3.debug - usually it is not provided
   // while it is available in RPC API                                                
@@ -97,16 +110,16 @@ var evmDebugIterator = function(web3, txHash, logger) {
 };
 
 
-var evmBreakpoints = {
+var evm = {
    contract: evmContract,
-   breakpoint: evmBreakpoint, 
+   breakpoint: evmWatcher, 
    iterator: evmDebugIterator 
 };
                              
 if (typeof window !== 'undefined') {
     // exporting to web version - just by setting global ...
-    window.evmBreakpoints = evmBreakpoints;
+    window.evmBreakpoints = evm;
 } else {
     // exporting for usage in server version
-    module.exports  = evmBreakpoints;
+    module.exports  = evm;
 }

@@ -2,17 +2,32 @@
 <html>
 <head>
   <title>Example of debugging library usage in web browser</title>
+  <!-- adding browser-based Solidity Compiler -->
+  <script src="./browser-solc.min.js"></script>
+  <script src="./web3.min.js"></script>
+  <script>
+   // This example is maid for the existing contract in main net
+   var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8547"));
+   // URL for the contract source
+   var contractSourceUrl = "./TokenStore.sol";
+   // Name of the contract in the list of compiled contracts
+   var contractName = ":TokenStore";
+   // Transaction example: cancelOrder
+   var transactionHash = "0xd26b12d5ee2cbbb81ae5ccdde6e9f3cce3caed249a555576985a9c0865051b98";
+   // Lines of breakpoints - for simplification of debugging
+   var lines = [291, 292, 295, 296];
+
+  </script>
 </head>
 <body>
+  <div><strong>STATUS</strong> (please open console for more details):</div>
+  <hr />
   <pre id="output"></pre>
 
-
-  <!-- initalizing standard JSON --> 
-  <script id="standardJson" type="application/json">{}</script>
   <!-- adding EVM breakpoint lirary -->
-  <script src="./index.js"></script>
-  <!-- running debug -->
-  <script src="./runner.js"></script>
+  <script src="./../../index.js"></script>
+  <!-- adding running debug -->
+  <script src="./trace-runner.js"></script>
 
 </body>
 </html>
