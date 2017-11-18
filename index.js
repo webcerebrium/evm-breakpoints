@@ -51,11 +51,12 @@ var evmWatcher = function () {
   };
 
   var condition = function() {
+    // (log.pc
     return 'true';
   };
 
   var data = function() {
-    return 'log';
+    return 'JSON.stringify(log)';
   };
 
   // builds the options for debugTransaction - mainly the tracer string
@@ -70,7 +71,7 @@ var evmWatcher = function () {
 // --- --- --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- --- 
 // 3 - Breakpoints iterator
 // --- --- --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- --- 
-var evmDebugIterator = function(web3, txHash, logger) {
+var evmDebugIterator = function(web3, txHash, logger, timeout) {
   if (typeof web3 !== 'object') { throw new Error('web3 is not passed to Debug Iterator'); }
   if (!txHash) { throw new Error('Transaction expected'); }
   if (typeof logger !== 'string') { throw new Error('Iterator expects logger as third parameter'); }
@@ -105,7 +106,7 @@ var evmDebugIterator = function(web3, txHash, logger) {
     if (this.current > this.data.length) this.current++;
   };
 
-  this.data = web3.debug.traceTransaction(txHash, logger);
+  this.data = web3.debug.traceTransaction(txHash, { tracer: logger, timeout: timeout || '1m' });
   return this;
 };
 

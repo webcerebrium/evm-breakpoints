@@ -30,6 +30,8 @@ document.addEventListener("DOMContentLoaded", function() {
        
           // loading all transaction - debugger will iterate through all the cases
           var debug = evm.iterator(web3, txHash, logger);
+          out("Tracer running finished, state of " + debug.data.length + " steps saved" );
+          console.info(debug.data);
           // at this point we can just iterate back and forth between breakpoints
           while (!debug.stopped()) {
              out(JSON.stringify(debug.get()) );
