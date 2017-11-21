@@ -5,38 +5,43 @@
 var isBrowser = typeof window !== 'undefined';
 var evmContract = function(options) {
   // if (!options.address) { throw new Error('Expected to have contract address'); }
-
-  var loadSolc = isBrowser ? function(compiler, cb) { return BrowserSolc.loadVersion("soljson-" + compiler + ".js", cb); } : require('solc').loadRemoteVersion;
-  var expected = ['source'];
- 
   var events = {};
   this.on = function(event, callback) {
     events[event] = callback;
+    return this;
   };
 
-  var json = {};
-  var lines = [];
-  var setJson = function(val) { 
-    if (!val || !val.srcmapRuntime) {
-	throw new Error("srcmapRuntime was not found in compiled contract");
+  try {
+    var loadSolc = isBrowser ? function(compiler, cb) { return BrowserSolc.loadVersion("soljson-" + compiler + ".js", cb); } : require('solc').loadRemoteVersion;
+    var expected = ['source'];
+   
+    var json = {};
+    var lines = [];
+    var setJson = function(val) { 
+      if (val.errors) {
+	events.error(val.errors.join(","));   
+      } else {
+        json = val; 
+        if (typeof events.ready === 'function') { events.ready(json); }
+      }
     }
-    json = val; 
-    if (typeof events.ready === 'function') { events.ready(json); }
-  }
-
-  if (options.source) {        
-     if (options.compiler) {
+    if (options.source) {        
+       if (options.compiler) {
 	console.log("Loading compiler version: " + options.compiler);
-     	loadSolc(options.compiler, function(solcCustom) {
+       	loadSolc(options.compiler, function(solcCustom) {
            var compiled = solcCustom.compile(options.source, options.optimization ? 1 : 0);
 	   setJson(compiled);
-     	});
-     } else { 
+       	});
+       } else { 
 	throw new Error("Compiler version is not specified");
-     }
-  } else {
-     throw new Error("Contract expects to have " + expected.join(" or "));
-  } 
+       }
+    } else {
+       throw new Error("Contract expects to have " + expected.join(" or "));
+    }
+  } catch (e) {
+    if (typeof events.error === 'function') events.error(e);
+    else throw e;
+  }  
   return this;
 };
 
@@ -71,6 +76,31 @@ var linesMap = function(source) {
   return this;  
 };
 
+
+// --- --- --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- --- 
+// 3 - internal class for mapping bytecode
+// --- --- --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- --- 
+var bytecodeMap = function(source, sourceMap) {
+
+  this.bytecode = [];
+  var lm = linesMap(source);
+  // go through source map, create offsets for every bytecode position
+  var srcMap = sourceMap.split(";");
+  var offset = 0, size = 0;
+  for (var si = 0; si < srcMap.length; si++) {
+    var src = srcMap[si].split(':');
+    if (src.length > 1) { 
+      if (src[0]) { offset = src[0]; }
+	  if (src[1]) { size = src[1]; }
+    }
+    var bc = { offset: offset, size: size };
+    var line = lm.find(offset);
+    if (line) bc.line = line;
+    this.bytecode[si] = bc;
+  }
+  return this
+};
+
 // --- --- --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- --- 
 // 3 - watcher object - contains breakpoints
 // --- --- --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- ---  --- --- 
@@ -80,33 +110,24 @@ var evmWatcher = function () {
   this.points = {};
 
   this.add = function(params) {
-    if (!params.contract && !params.contractFile) { throw new Error("Expected contract as the 1st argument to add breakpoint"); }
+    if (!params.source && !params.contractFile) { throw new Error("Expected contract source as the 1st argument to add breakpoint"); }
     if (!params.lines) { throw new Error("Expected lines list to add breakpoint"); } // future: alternative to lines could be single line or offset
 
     if (params.contractFile) {
       var compiledJson = JSON.parse(require('fs').readFileSync(params.contractFile));
       if (!compiledJson.deployedSourceMap) { throw new Error("'deployedSourceMap' is missing in compiled JSON"); }
       if (!compiledJson.source) { throw new Error("'source' is missing in compiled JSON"); }
-
-      var lm = linesMap(compiledJson.source);
-      // go through source map, create offsets for every bytecode position
-      var srcMap = compiledJson.deployedSourceMap.split(";");
-      var offset = 0, size = 0;
-      for (var si = 0; si < srcMap.length; si++) {
-        var src = srcMap[si].split(':');
-        if (src.length > 1) { 
-          if (src[0]) { offset = src[0]; }
-	  if (src[1]) { size = src[1]; }
-        }
-        var bc = { offset: offset, size: size };
-        var line = lm.find(offset);
-        if (line) bc.line = line;
-        this.bytecode[si] = bc;
-      }
-      if (params.lines) {
-        this.points.lines = params.lines;
-      }
+      this.bytecode = bytecodeMap(compiledJson.source, compiledJson.deployedSourceMap).bytecode;
+    } else if (params.source && params.sourceMap) {
+      this.bytecode = bytecodeMap(params.source, params.sourceMap).bytecode;
+    } else {
+      throw new Error("Source and source map of the contract are expected");
     }
+
+    if (params.lines) {
+        this.points.lines = params.lines;
+    }
+  
     return this;
   };
 

@@ -12,7 +12,7 @@ contract('Simple', function(accounts) {
 
   it("should calculate iterations of 200 w/debug", async function() {
     const instance = await Simple.deployed();
-    const txHash = await instance.calculate.sendTransaction(334);
+    const txHash = await instance.calculate.sendTransaction(200);
     const txReceipt = web3.eth.getTransactionReceipt(txHash);
     assert.isNotNull(txReceipt); // it should be mined on testRPC
 
