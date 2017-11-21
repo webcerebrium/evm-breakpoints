@@ -8,20 +8,17 @@
   <script>
    // This example is maid for the existing contract in main net
    // http://node.web3api.com:8545/ doesn't give enough of state. Use full-sync node instead
-   var web3 = new Web3(new Web3.providers.HttpProvider("http://node.web3api.com:8545/"));
+   var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545/"));
 
    // URL for the contract source
-   var contractSourceUrl = "./TokenStore.sol";
+   var contractSourceUrl = "./Simple.sol";
    // Name of the contract in the list of compiled contracts
-   var contractName = ":TokenStore";
+   var contractName = ":Simple";
    // Lines of breakpoints - for simplification of debugging
-   var lines = [291, 292, 295, 296];
+   var lines = [54];
 
-   // Transaction example: cancelOrder
+   // Transaction example: calculate
    var transactionHash = "0x48e4ca3e8a9a1b0643cc717ab4b4a682002a3a91fb3e7d7cccd68bbf88415f08";
-
-
-
 
   </script>
 </head>

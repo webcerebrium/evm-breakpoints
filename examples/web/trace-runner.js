@@ -29,9 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
           // then we can set up breakpoints
           // building the function that will be called by tracer - asyncronous
           var logger = evm.breakpoint().add({ contract: compiled.contracts[contractName], lines });
-	  console.info(logger.points);
-	  // out('breakpoints: ' + JSON.stringify(logger.points));
-       
+      
           // loading all transaction - debugger will iterate through all the cases
           var debug = evm.iterator(web3, txHash, logger);
           out("Tracer running finished, state of " + debug.data.length + " steps saved" );
