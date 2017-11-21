@@ -1,5 +1,8 @@
 // - - - 
 var evm = window.evmBreakpoints; // alias for our debugger library
+
+contractCompiler = typeof contractCompiler !== 'undefined' ? contractCompiler : "v0.4.12+commit.194ff033";
+
 function out(x)  { document.getElementById("output").innerHTML += "<div>" + x + "</div>"; }
 function status(x) { document.getElementById("output").innerHTML = x; }
 function err(x)  { document.getElementById("output").innerHTML += "<div style='color:darkred'>" + x + "</div>"; }
@@ -11,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
   function runTracer(source, txHash, contractName, lines) {
     // setting up contract and all information about its compiled version
     evm
-     .contract({ source: source, compiler: "v0.4.12+commit.194ff033" }) // v0.4.13+commit.fb4cb1a" }) // example of bad: 
+     .contract({ source: source, compiler: contractCompiler  }) // v0.4.13+commit.fb4cb1a" })
      .on('ready', function(compiled) {
        try{ 
           console.info("Contracts Compiled", compiled);
@@ -25,8 +28,9 @@ document.addEventListener("DOMContentLoaded", function() {
           // we know source maps and all bytecode / assembly map,
           // then we can set up breakpoints
           // building the function that will be called by tracer - asyncronous
-          var logger = evm.breakpoint().add({ contract: compiled.contracts[contractName], lines }).build();
-	  out(logger);
+          var logger = evm.breakpoint().add({ contract: compiled.contracts[contractName], lines });
+	  console.info(logger.points);
+	  // out('breakpoints: ' + JSON.stringify(logger.points));
        
           // loading all transaction - debugger will iterate through all the cases
           var debug = evm.iterator(web3, txHash, logger);
