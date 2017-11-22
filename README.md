@@ -1,5 +1,7 @@
 # evm-breakpoints
-Human-friendly interface for Ethereum VM breakpoints - debugging helper
+Human-friendly interface for Ethereum VM breakpoints - debugging helper.
+
+## Example of library usage in tests:
 
 ## Disclaimer
 
@@ -10,3 +12,6 @@ https://github.com/ethereum/go-ethereum/wiki/Management-APIs#debug_tracetransact
 
 - If you are receiving `Error: missing trie node`,
 in order to use trace api of geth you have to synchronize your node with `--syncmode full`
+
+## License
+MIT. Anyone can copy, change, derive further work from this repository without any restrictions.
