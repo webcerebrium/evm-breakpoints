@@ -27,7 +27,7 @@ In web environment, you need to compile the contract, and then provide iterator 
 ```javascript
 var evm = window.evmBreakpoints;
 evm
-  .contract({ source: contractSoure, compiler: "latest"  })
+  .contract({ source: contractSource, compiler: "latest"  })
   .on('ready', function(compiled) {
      var json = compiled.contracts[contractName];
      var logger = evm.breakpoint().add({ source, sourceMap: json.srcmapRuntime, lines: [21] });
