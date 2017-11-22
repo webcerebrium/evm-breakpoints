@@ -1,6 +1,6 @@
 {
   "name": "evm-breakpoints",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Human-friendly interface for Ethereum VM breakpoints - debugging helper",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,13 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/webcerebrium/evm-breakpoints/issues"
+  },
+  "library": {
+    "name": "evm-breakpoints",
+    "entry": "index.js",
+    "dist-node": "index.js",
+    "dist-web": "index.js",
+    "bundle-node": false
   },
   "homepage": "https://github.com/webcerebrium/evm-breakpoints#readme"
 }

@@ -3,6 +3,44 @@ Human-friendly interface for Ethereum VM breakpoints - debugging helper.
 
 ## Example of library usage in tests:
 
+```javascript
+const evm = reuqire('evm-breakpoints');
+
+const logger = evm.breakpoint().add({
+  contractFile: "./build/contracts/Simple.json", // we should take full compilation info from the given file
+  lines: [21] // multiple lines can be specified as breakpoints
+});
+
+const debug = evm.iterator(web3, txHash, logger);
+while (!debug.stopped()) {
+  console.log(debug.get());
+  debug.next();
+}
+```
+please see `examples/truffle` for a full example of debugging local variables.
+
+
+## Example of library usage in web:
+
+In web environment, you need to compile the contract, and then provide iterator source map from compiled version
+
+```javascript
+var evm = window.evmBreakpoints;
+evm
+  .contract({ source: contractSoure, compiler: "latest"  })
+  .on('ready', function(compiled) {
+     var json = compiled.contracts[contractName];
+     var logger = evm.breakpoint().add({ source, sourceMap: json.srcmapRuntime, lines: [21] });
+     var debug = evm.iterator(web3, txHash, logger);
+     while (!debug.stopped()) {
+       console.log(debug.get());
+       debug.next();
+     }
+  })
+  .on('error', console.error);
+```
+please see `examples/web/index.html` for a full example of debugging local variables.
+
 ## Disclaimer
 
 Work of the library is based on experimental `web3.debug.traceTransaction`, so please keep following the updates
