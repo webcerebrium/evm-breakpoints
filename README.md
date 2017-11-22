@@ -4,7 +4,7 @@ Human-friendly interface for Ethereum VM breakpoints - debugging helper.
 ## Example of library usage in tests:
 
 ```javascript
-const evm = reuqire('evm-breakpoints');
+const evm = require('evm-breakpoints');
 
 const logger = evm.breakpoint().add({
   contractFile: "./build/contracts/Simple.json", // we should take full compilation info from the given file
