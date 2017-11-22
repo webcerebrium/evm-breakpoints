@@ -1,6 +1,11 @@
 # evm-breakpoints
 Human-friendly interface for Ethereum VM breakpoints - debugging helper.
 
+## Install as Library
+```
+npm save --dev evm-breakpoints
+```
+
 ## Example of library usage in tests:
 
 ```javascript
